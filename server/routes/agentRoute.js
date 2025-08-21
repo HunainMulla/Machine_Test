@@ -25,9 +25,7 @@ router.post('/create', async (req, res) => {
                 id: agent._id,
                 name: agent.name,
                 email: agent.email,
-                number: agent.number,
-                country_code: agent.country_code,
-                password: agent.password
+                tasks: agent.tasks
             }
         });
 
@@ -47,4 +45,16 @@ router.get('/deleteAll', async (req, res) => {
 
 router.get('/test', (req, res) => {
     res.send("Hello World");
+});
+
+
+router.get('/all', async (req, res) => {
+    try {
+        const agents = await Agent.find();
+        res.status(200).json(agents);
+    }
+    catch (error) {
+        console.error("Agent retrieval error:", error);
+        res.status(500).json({ message: "Internal server error" });
+    }
 });
