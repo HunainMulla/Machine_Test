@@ -19,8 +19,32 @@ router.post("/signup", async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Create new user with all fields
+        if(!email || !password){
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        if(email=="admin@gmail.com" && password=="admin"){
+            const newUser = await User.create({
+                email,
+                password: hashedPassword,
+                isAdmin:true
+            });
+            const token = jwt.sign({ email: newUser.email, isAdmin: newUser.isAdmin }, process.env.JWT_SECRET);
 
 
+            console.log("Token generated:", token);
+            res.status(201).json({
+                message: "User created successfully",
+                token: token,
+                user: {
+                    id: newUser._id,
+                    email: newUser.email,
+                    isAdmin: newUser.isAdmin
+                }
+            });
+            return;
+        }
+        
         const newUser = await User.create({
             email,
             password: hashedPassword,
@@ -35,7 +59,7 @@ router.post("/signup", async (req, res) => {
             user: {
                 id: newUser._id,
                 email: newUser.email,
-                password: newUser.password
+                isAdmin: newUser.isAdmin
 
             }
         });

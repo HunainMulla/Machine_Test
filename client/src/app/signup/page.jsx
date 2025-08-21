@@ -3,6 +3,7 @@
   import Link from "next/link";
   import {useForm} from "react-hook-form";
   import { useState,useEffect } from "react";
+  import Navbar from "../Components/Navbar";
 
   export default function SignupPage() {
 
@@ -24,11 +25,17 @@
     alert(result.message);
     console.log('token :'+result.token);
     localStorage.setItem("token",JSON.stringify(result.token));
+    localStorage.setItem("User",JSON.stringify(result.user));
   };
 
 
     return (
+      <div>
+        <div className="border-b border-[#6552D0]">
+          <Navbar/>
+        </div>
       <div className="min-h-screen flex items-center justify-center bg-[#17203D] px-4">
+        
         <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-center text-[#17203D]">
             Create an Account
@@ -43,7 +50,7 @@
                 type="text"
                 placeholder="John Doe"
                 {...register("name",{required:true})}
-                className="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
+                className="text-black w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
               />
             </div>
 
@@ -55,7 +62,7 @@
                 type="email"
                 placeholder="you@example.com"
                 {...register("email",{required:true})}
-                className="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
+                className="text-black w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
               />
             </div>
 
@@ -67,8 +74,8 @@
                 type="password"
                 placeholder="••••••••"
                 {...register("password",{required:true})}
-                className="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
-              />
+                className="text-black w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
+                />
             </div>
 
             <button
@@ -87,5 +94,6 @@
           </p>
         </div>
       </div>
+              </div>
     );
   }

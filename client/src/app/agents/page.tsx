@@ -1,6 +1,23 @@
 "use client";
+import {useRouter} from "next/navigation";
 import Navbar from "../Components/Navbar";
+import {useEffect,useState} from 'react'
+
+
+
 const Agents = () => {
+
+  const[loading,setLoading] = useState<boolean>(true);
+
+  const router = useRouter();
+  useEffect(() => {
+    const token_ = localStorage.getItem("token");
+    if (!token_) {
+      router.push("/login");
+    }
+    setLoading(false);
+  }, []);
+
   const demo_agents = [
     {
       name: "Hunain Mulla",
@@ -21,7 +38,8 @@ const Agents = () => {
   return (
     <>
     <Navbar/>
-    <div className="min-h-screen bg-[#17203D] px-6 py-10">
+    {loading && <p>Loading...</p>}
+    {!loading && <div className="min-h-screen bg-[#17203D] px-6 py-10">
       <h1 className="text-3xl font-bold text-white mb-8 text-center">
         Agents
       </h1>
@@ -51,7 +69,7 @@ const Agents = () => {
           </div>
         ))}
       </div>
-    </div>
+    </div>}
     </>
   );
 };

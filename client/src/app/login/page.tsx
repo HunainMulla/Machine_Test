@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
+import Navbar from "../Components/Navbar";
 
 export default function LoginPage() {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -12,12 +13,12 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState(""); // 👈 state for error
   const [successMessage, setSuccessMessage] = useState(""); // 👈 optional success message
 
-  useEffect(() => {
-    const token_ = localStorage.getItem("token");
-    if (token_) {
-      router.push("/agents");
-    }
-  }, []);
+  // useEffect(() => {
+  //   const token_ = localStorage.getItem("token");
+  //   if (token_) {
+  //     router.push("/agents");
+  //   }
+  // }, []);
 
   const onSubmit = async (data:any) => {
     setErrorMessage("");
@@ -40,6 +41,7 @@ export default function LoginPage() {
 
       setSuccessMessage("Login successful! Redirecting...");
       localStorage.setItem("token", JSON.stringify(result.token));
+      localStorage.setItem("User", JSON.stringify(result.user));
       setTimeout(() => router.push("/agents"), 1000); // small delay to show success
     } catch (error) {
       setErrorMessage("Something went wrong. Please try again later.");
@@ -48,6 +50,10 @@ export default function LoginPage() {
   };
 
   return (
+    <div>
+      <div className="border-b border-[#6552D0]">
+        <Navbar/>
+      </div>
     <div className="min-h-screen flex items-center justify-center bg-[#17203D] px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
         <h2 className="text-2xl font-bold text-center text-[#17203D]">
@@ -77,7 +83,7 @@ export default function LoginPage() {
               type="email"
               placeholder="you@example.com"
               {...register("email", { required: true })}
-              className="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
+              className="text-black w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
             />
           </div>
 
@@ -89,7 +95,7 @@ export default function LoginPage() {
               type="password"
               placeholder="••••••••"
               {...register("password", { required: true })}
-              className="w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
+              className="text-black w-full mt-2 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6552D0]"
             />
           </div>
 
@@ -108,6 +114,7 @@ export default function LoginPage() {
           </Link>
         </p>
       </div>
+    </div>
     </div>
   );
 }
