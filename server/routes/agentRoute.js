@@ -58,3 +58,25 @@ router.get('/all', async (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
+// Update tasks for an agent
+router.post("/updateTasks/:id", async (req, res) => {
+    try {
+      const { tasks } = req.body;
+      const agent = await Agent.findByIdAndUpdate(
+        req.params.id,
+        { tasks },
+        { new: true }
+      );
+      if (!agent) {
+        return res.status(404).json({ message: "Agent not found" });
+      }
+      res.status(200).json(agent);
+    } catch (error) {
+      console.error("Error updating tasks:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+const agentRouter = router;
+module.exports = agentRouter;

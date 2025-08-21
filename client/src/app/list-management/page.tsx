@@ -1,12 +1,12 @@
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 
-// Types
 interface Task {
   [key: string]: string;
 }
 
 interface Agent {
+  _id: string; // since MongoDB returns _id
   name: string;
   email: string;
   phone: string;
@@ -14,25 +14,20 @@ interface Agent {
   tasks: Task[];
 }
 
+const API_URL = "http://localhost:5000"; // change to your backend url
+
 const ListManagement = () => {
   const [file, setFile] = useState<File | null>(null);
   const [data, setData] = useState<Task[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([
-    {
-      name: "Hunain Mulla",
-      email: "hunainmulla@gmail.com",
-      phone: "1234567890",
-      country_code: "+91",
-      tasks: [],
-    },
-    {
-      name: "Agent Two",
-      email: "agenttwo@gmail.com",
-      phone: "9876543210",
-      country_code: "+91",
-      tasks: [],
-    },
-  ]);
+  const [agents, setAgents] = useState<Agent[]>([]);
+
+  // Fetch agents on mount
+  useEffect(() => {
+    fetch(`${API_URL}/agent/all`)
+      .then((res) => res.json())
+      .then((data) => setAgents(data))
+      .catch((err) => console.error("Error fetching agents:", err));
+  }, []);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const uploadedFile = e.target.files?.[0];
@@ -60,7 +55,6 @@ const ListManagement = () => {
         });
 
         setData(parsedData);
-        console.log("Parsed CSV Data:", parsedData);
       };
       reader.readAsText(uploadedFile);
     } else {
@@ -78,13 +72,13 @@ const ListManagement = () => {
     setFile(null);
   };
 
-  const handleDistribute = () => {
+  const handleDistribute = async () => {
     if (data.length === 0) {
       alert("No parsed data to distribute!");
       return;
     }
 
-    const updatedAgents = agents.map((agent) => ({ ...agent, tasks: [] })); // reset tasks
+    let updatedAgents = agents.map((agent) => ({ ...agent, tasks: [] })); // reset tasks
 
     data.forEach((task, index) => {
       const agentIndex = index % updatedAgents.length; // round-robin distribution
@@ -92,7 +86,23 @@ const ListManagement = () => {
     });
 
     setAgents(updatedAgents);
-    alert("Tasks distributed among agents successfully!");
+
+    // 🔹 Push updated tasks to backend
+    try {
+      await Promise.all(
+        updatedAgents.map((agent) =>
+          fetch(`${API_URL}/agent/updateTasks/${agent._id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tasks: agent.tasks }),
+          })
+        )
+      );
+      alert("Tasks distributed and saved to DB successfully!");
+    } catch (err) {
+      console.error("Error updating tasks:", err);
+      alert("Failed to update tasks in DB.");
+    }
   };
 
   return (
@@ -102,29 +112,18 @@ const ListManagement = () => {
           📂 List Management
         </h1>
 
-        <form
-          onSubmit={handleUpload}
-          className="flex flex-col items-center space-y-5"
-        >
+        <form onSubmit={handleUpload} className="flex flex-col items-center space-y-5">
           <input
             type="file"
             accept=".csv"
             onChange={handleFileChange}
-            className="block w-full text-sm text-gray-700
-            file:mr-4 file:py-2 file:px-4
-            file:rounded-lg file:border-0
-            file:text-sm file:font-semibold
-            file:bg-[#6552D0] file:text-white
-            hover:file:bg-[#4f3cb0]
-            cursor-pointer"
+            className="block w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#6552D0] file:text-white hover:file:bg-[#4f3cb0] cursor-pointer"
           />
-
           {file && (
             <p className="text-sm text-gray-600">
               Selected file: <span className="font-medium">{file.name}</span>
             </p>
           )}
-
           <div className="flex space-x-4">
             <button
               type="submit"
@@ -142,7 +141,7 @@ const ListManagement = () => {
           </div>
         </form>
 
-        {/* Display Parsed Data as List */}
+        {/* Display Parsed Data */}
         {data.length > 0 && (
           <div className="mt-8">
             <h2 className="text-lg font-semibold text-black mb-3">
@@ -165,18 +164,15 @@ const ListManagement = () => {
           </div>
         )}
 
-        {/* Display Agents in Cards */}
-        {agents.some((agent) => agent.tasks.length > 0) && (
+        {/* Display Agents */}
+        {agents.length > 0 && (
           <div className="mt-10">
             <h2 className="text-lg font-semibold text-black mb-3">
               Agents & Their Tasks
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {agents.map((agent, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white border rounded-xl shadow p-5"
-                >
+                <div key={idx} className="bg-white border rounded-xl shadow p-5">
                   <h3 className="text-xl font-bold text-[#17203D]">
                     {agent.name}
                   </h3>
@@ -189,9 +185,7 @@ const ListManagement = () => {
                   {agent.tasks.length > 0 ? (
                     <ul className="list-disc list-inside text-sm text-gray-700 mt-1">
                       {agent.tasks.map((task, tIdx) => (
-                        <li key={tIdx}>
-                          {Object.values(task).join(" | ")}
-                        </li>
+                        <li key={tIdx}>{Object.values(task).join(" | ")}</li>
                       ))}
                     </ul>
                   ) : (
